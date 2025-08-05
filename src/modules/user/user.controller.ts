@@ -21,7 +21,7 @@ import {
 } from "@/modules/shared/swagger";
 import { CreateUserDto, UpdateUserDto, UserResponseDto, UserListResponseDto } from "./dto";
 import { UserService } from "./user.service";
-import { NotFoundError, BadRequestError, ConflictError, InternalServerError } from "@/shares/error";
+import { NotFoundError, BadRequestError, ConflictError } from "@/shares/error";
 import { IUserController } from "./user.interface";
 import { LoggerService } from "../shared/logger";
 import { ResponseUtil } from "@/shares/response";

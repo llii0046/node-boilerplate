@@ -4,10 +4,10 @@ import { LoggerService } from "../shared/logger";
 import { IPrismaService } from "../shared/prisma";
 import { PaginationDto } from "@/shares/dto";
 import { IUserService } from "./user.interface";
-import { createPaginator, PaginatedResult } from "prisma-pagination";
+import { createPaginator, PaginatedResult, PaginateFunction } from "prisma-pagination";
 
 export class UserService implements IUserService {
-  private paginate: ReturnType<typeof createPaginator>;
+  private paginate: PaginateFunction;
 
   constructor(
     private prismaService: IPrismaService,
@@ -40,17 +40,7 @@ export class UserService implements IUserService {
 
     this.loggerService.info("Users fetched successfully", result);
 
-    // Convert Date objects to ISO strings for API response
-    const transformedData = {
-      ...result,
-      data: result.data.map((user: any) => ({
-        ...user,
-        createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
-        updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
-      })),
-    };
-
-    return transformedData as PaginatedResult<UserResponseDto>;
+    return result as PaginatedResult<UserResponseDto>;
   }
 
   async findById(id: string): Promise<UserResponseDto> {
@@ -75,11 +65,7 @@ export class UserService implements IUserService {
     }
 
     this.loggerService?.info("User found successfully", { id: user.id, email: user.email });
-    return {
-      ...user,
-      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
-    };
+    return user;
   }
 
   async findByEmail(email: string): Promise<UserResponseDto> {
@@ -105,11 +91,7 @@ export class UserService implements IUserService {
     }
 
     this.loggerService?.info("User found successfully", { id: user.id, email: user.email });
-    return {
-      ...user,
-      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
-    };
+    return user;
   }
 
   async create(userData: CreateUserDto): Promise<UserResponseDto> {
@@ -134,11 +116,7 @@ export class UserService implements IUserService {
       },
     });
 
-    return {
-      ...user,
-      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
-    };
+    return user;
   }
 
   async update(id: string, userData: UpdateUserDto): Promise<UserResponseDto> {
@@ -175,11 +153,7 @@ export class UserService implements IUserService {
       },
     });
 
-    return {
-      ...user,
-      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
-    };
+    return user;
   }
 
   async delete(id: string): Promise<void> {

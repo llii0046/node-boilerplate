@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { User } from "@prisma/client";
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./dto";
 import { PaginationDto } from "@/shares/dto";
 import { PaginatedResult } from "prisma-pagination";
@@ -9,7 +8,7 @@ export interface IUserService {
   findAll(dto: PaginationDto): Promise<PaginatedResult<UserResponseDto>>;
   findById(id: string): Promise<UserResponseDto>;
   findByEmail(email: string): Promise<UserResponseDto>;
-  create(data: CreateUserDto): Promise<UserResponseDto>;
+  create(dto: CreateUserDto): Promise<UserResponseDto>;
   update(id: string, data: UpdateUserDto): Promise<UserResponseDto>;
   delete(id: string): Promise<void>;
 }
