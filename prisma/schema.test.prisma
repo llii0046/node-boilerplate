@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./test.db"
+}
+
+// User model
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  isActive  Boolean  @default(true)
+  // One-to-one relationship
+  profile   Profile?
+  
+  // One-to-many relationships
+  posts     Post[]
+  comments  Comment[]
+  
+  // Many-to-many relationships
+  categories Category[]
+  
+  // Many-to-many through junction table
+  userTags   UserTag[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// User profile - One-to-one relationship
+model Profile {
+  id     String @id @default(uuid())
+  bio    String?
+  avatar String?
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Post model - One-to-many relationship
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  
+  // Foreign key relationships
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // One-to-many relationships
+  comments  Comment[]
+  
+  // Many-to-many relationships
+  tags      Tag[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([authorId])
+}
+
+// Comment model - One-to-many relationship
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  
+  // Foreign key relationships
+  authorId  String
+  postId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([authorId])
+  @@index([postId])
+}
+
+// Category model - Many-to-many relationship
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[]
+}
+
+// Tag model - Many-to-many relationship
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[]
+  users UserTag[]
+}
+
+// UserTag junction table - Many-to-many relationship
+model UserTag {
+  id     String @id @default(uuid())
+  userId String
+  tagId  String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tagId])
+  @@index([userId])
+  @@index([tagId])
+} 

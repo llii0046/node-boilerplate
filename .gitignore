@@ -98,6 +98,10 @@ temp/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+
+# Test database files
+test.db
+test.db-journal
 Thumbs.db
 
 # Database

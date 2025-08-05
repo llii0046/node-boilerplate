@@ -28,6 +28,10 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "test:db:generate": "prisma generate --schema=prisma/schema.test.prisma",
+    "test:db:migrate": "prisma migrate dev --schema=prisma/schema.test.prisma",
+    "test:db:seed": "tsx prisma/seed.test.ts",
+    "test:db:reset": "npm run test:db:migrate && npm run test:db:seed",
     "db:studio": "prisma studio",
     "prepare": "husky install"
   },

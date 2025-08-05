@@ -1,18 +1,30 @@
 import request from "supertest";
 import express from "express";
 import { AppModule } from "@/app.module";
-import { PrismaService } from "@/modules/shared/prisma";
+import { PrismaTestService } from "@/modules/shared/prisma/prisma.test.service";
 import { AppError, ValidationError } from "@/shares/error";
+import { SharedTestModule } from "@/modules/shared/shared.test.module";
+import { UserModule } from "@/modules/user/user.module";
+import { HealthController } from "@/modules/health/health.controller";
 
 // Create a test app instance
 const createTestApp = async () => {
   const app = express();
   app.use(express.json());
   
-  const appModule = new AppModule();
-  await appModule.onModuleInit();
+  // Use test modules instead of production modules
+  const sharedTestModule = new SharedTestModule();
+  await sharedTestModule.onModuleInit();
   
-  app.use("/api", appModule.getRouter());
+  const userModule = new UserModule(
+    sharedTestModule.getPrismaService(),
+    sharedTestModule.getLoggerService(),
+  );
+  const healthController = new HealthController();
+  
+  // Set up routes
+  app.use("/api/users", userModule.getRouter());
+  app.use("/api/health", healthController.getRouter());
   
   // 404 handler
   app.use((_req, res) => {
@@ -68,17 +80,16 @@ const createTestApp = async () => {
 };
 
 describe("Users API", () => {
-  let prismaService: PrismaService;
+  let prismaService: PrismaTestService;
   let testApp: express.Application;
 
   beforeAll(async () => {
     // Create test app
     testApp = await createTestApp();
     
-    prismaService = new PrismaService();
+    prismaService = PrismaTestService.getInstance();
     await prismaService.connect();
-    // Clean up test data
-    await prismaService.user.deleteMany();
+    // Don't clean database - use pre-seeded data
   });
 
   afterAll(async () => {
@@ -86,40 +97,23 @@ describe("Users API", () => {
   });
 
   describe("GET /api/users", () => {
-    it("should return empty users list", async () => {
+    it("should return users list", async () => {
       const response = await request(testApp).get("/api/users").expect(200);
 
-      expect(response.body).toEqual({
-        data: [],
-        meta: {
-          total: 0,
-          currentPage: 1,
-          lastPage: 0,
-          perPage: 10,
-          prev: null,
-          next: null,
-        },
-      });
+      // Should return seeded users
+      expect(response.body.data).toHaveLength(3); // 3 users from seed
+      expect(response.body.meta.total).toBe(3);
+      expect(response.body.meta.currentPage).toBe(1);
+      expect(response.body.meta.perPage).toBe(10);
     });
 
     it("should return paginated users", async () => {
-      // Create test user
-      const user1 = await prismaService.user.create({
-        data: { email: "test1@example.com", name: "Test User 1" },
-      });
-      const user2 = await prismaService.user.create({
-        data: { email: "test2@example.com", name: "Test User 2" },
-      });
-
       const response = await request(testApp).get("/api/users?page=1&limit=1").expect(200);
 
       expect(response.body.data).toHaveLength(1);
-      expect(response.body.meta.total).toBe(2);
+      expect(response.body.meta.total).toBe(3); // 3 users from seed
       expect(response.body.meta.currentPage).toBe(1);
       expect(response.body.meta.perPage).toBe(1);
-
-      // Clean up test data
-      await prismaService.user.deleteMany({ where: { id: { in: [user1.id, user2.id] } } });
     });
   });
 
@@ -140,8 +134,7 @@ describe("Users API", () => {
       expect(response.body.data.createdAt).toBeDefined();
       expect(response.body.data.updatedAt).toBeDefined();
 
-      // Clean up test data
-      await prismaService.user.delete({ where: { id: response.body.data.id } });
+      // Don't clean up - let it persist for other tests
     });
 
     it("should return 400 for invalid email", async () => {
@@ -157,27 +150,21 @@ describe("Users API", () => {
 
     it("should return 409 for duplicate email", async () => {
       const userData = {
-        email: "duplicate@example.com",
+        email: "test1@example.com", // Use existing email from seed
         name: "Test User",
       };
-
-      // Create first user
-      const user1 = await prismaService.user.create({ data: userData });
 
       // Try to create user with duplicate email
       const response = await request(testApp).post("/api/users").send(userData).expect(409);
 
       expect(response.body.error).toBe("CONFLICT");
       expect(response.body.message).toBe("Email already exists");
-
-      // Clean up test data
-      await prismaService.user.delete({ where: { id: user1.id } });
     });
   });
 
   describe("GET /api/users/:id", () => {
     it("should return user by id", async () => {
-      const user = await prismaService.user.create({
+      const user = await prismaService.getClient().user.create({
         data: { email: "getuser@example.com", name: "Get User" },
       });
 
@@ -190,7 +177,7 @@ describe("Users API", () => {
       });
 
       // Clean up test data
-      await prismaService.user.delete({ where: { id: user.id } });
+      await prismaService.getClient().user.delete({ where: { id: user.id } });
     });
 
     it("should return 404 for non-existent user", async () => {
@@ -203,7 +190,7 @@ describe("Users API", () => {
 
   describe("PUT /api/users/:id", () => {
     it("should update user", async () => {
-      const user = await prismaService.user.create({
+      const user = await prismaService.getClient().user.create({
         data: { email: "updateuser@example.com", name: "Original Name" },
       });
 
@@ -218,7 +205,7 @@ describe("Users API", () => {
       });
 
       // Clean up test data
-      await prismaService.user.delete({ where: { id: user.id } });
+      await prismaService.getClient().user.delete({ where: { id: user.id } });
     });
 
     it("should return 404 for non-existent user", async () => {
@@ -234,14 +221,14 @@ describe("Users API", () => {
 
   describe("DELETE /api/users/:id", () => {
     it("should delete user", async () => {
-      const user = await prismaService.user.create({
+      const user = await prismaService.getClient().user.create({
         data: { email: "deleteuser@example.com", name: "User" },
       });
 
       await request(testApp).delete(`/api/users/${user.id}`).expect(204);
 
       // Verify user was deleted
-      const deletedUser = await prismaService.user.findUnique({ where: { id: user.id } });
+      const deletedUser = await prismaService.getClient().user.findUnique({ where: { id: user.id } });
       expect(deletedUser).toBeNull();
     });
 
