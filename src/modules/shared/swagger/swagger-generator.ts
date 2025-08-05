@@ -1,10 +1,10 @@
-import { getApiProperties } from "./decorators/api-property.decorator.js";
-import { getApiResponses } from "./decorators/api-response.decorator.js";
-import { getApiOperation } from "./decorators/api-operation.decorator.js";
-import { getApiTags } from "./decorators/api-tags.decorator.js";
-import { getApiParams } from "./decorators/api-param.decorator.js";
-import { getApiQueries } from "./decorators/api-query.decorator.js";
-import { getApiBody } from "./decorators/api-body.decorator.js";
+import { getApiProperties } from "./decorators/api-property.decorator";
+import { getApiResponses } from "./decorators/api-response.decorator";
+import { getApiOperation } from "./decorators/api-operation.decorator";
+import { getApiTags } from "./decorators/api-tags.decorator";
+import { getApiParams } from "./decorators/api-param.decorator";
+import { getApiQueries } from "./decorators/api-query.decorator";
+import { getApiBody } from "./decorators/api-body.decorator";
 
 export interface RouteInfo {
   path: string;
