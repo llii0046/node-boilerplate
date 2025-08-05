@@ -1,6 +1,6 @@
 import { IsInt, Min, Max, IsOptional } from "class-validator";
 import { Expose, Transform } from "class-transformer";
-import { ApiPropertyOptional } from "@/modules/shared/swagger/decorators/index.js";
+import { ApiPropertyOptional } from "@/modules/shared/swagger/decorators";
 
 /**
  * Generic pagination query DTO

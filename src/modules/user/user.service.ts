@@ -3,8 +3,9 @@ import { NotFoundError, ConflictError } from "@/shares/error";
 import { LoggerService } from "../shared/logger";
 import { IPrismaService } from "../shared/prisma";
 import { PaginationDto } from "@/shares/dto";
+import { IUserService } from "./user.interface";
 
-export class UserService {
+export class UserService implements IUserService {
   constructor(
     private prismaService: IPrismaService,
     private loggerService: LoggerService,
