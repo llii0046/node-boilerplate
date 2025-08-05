@@ -1,22 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "@prisma/client";
-import { CreateUserDto, UpdateUserDto } from "./dto";
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./dto";
+import { PaginationDto } from "@/shares/dto";
+import { PaginatedResult } from "prisma-pagination";
 
 // User service interface
 export interface IUserService {
-  findAll(
-    page?: number,
-    limit?: number,
-  ): Promise<{
-    data: User[];
-    total: number;
-    page: number;
-    limit: number;
-  }>;
-  findById(id: string): Promise<User | null>;
-  findByEmail(email: string): Promise<User | null>;
-  create(data: CreateUserDto): Promise<User>;
-  update(id: string, data: UpdateUserDto): Promise<User>;
+  findAll(dto: PaginationDto): Promise<PaginatedResult<UserResponseDto>>;
+  findById(id: string): Promise<UserResponseDto>;
+  findByEmail(email: string): Promise<UserResponseDto>;
+  create(data: CreateUserDto): Promise<UserResponseDto>;
+  update(id: string, data: UpdateUserDto): Promise<UserResponseDto>;
   delete(id: string): Promise<void>;
 }
 
@@ -27,10 +21,4 @@ export interface IUserController {
   createUser(req: Request, res: Response, next: NextFunction): Promise<void>;
   updateUser(req: Request, res: Response, next: NextFunction): Promise<void>;
   deleteUser(req: Request, res: Response, next: NextFunction): Promise<void>;
-}
-
-// Pagination query parameters interface
-export interface PaginationQuery {
-  page?: number;
-  limit?: number;
 }

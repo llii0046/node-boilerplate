@@ -1,4 +1,4 @@
-import { LogContext, ErrorLogData, OperationLogData } from "./logger.type.js";
+import { LogContext, ErrorLogData, OperationLogData } from "./logger.type";
 
 // Logger service interface
 export interface ILoggerService {

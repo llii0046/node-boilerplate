@@ -40,7 +40,7 @@ export function banner(opts: {
     `Env         : ${opts.env}`,
     `Node        : ${opts.nodeVersion}`,
     `Port        : ${opts.port}`,
-    `Health      : ${base}/health`,
+    `Health      : ${base}/api/health`,
     `Swagger UI  : ${base}/api/docs`,
     `Database    : ${opts.dbUrlMasked}`,
     "────────────────────────────────────────",

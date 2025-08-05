@@ -1,6 +1,6 @@
 // ApiProperty decorators
-export { ApiProperty, ApiPropertyOptional, getApiProperties } from "./api-property.decorator.js";
-export type { ApiPropertyOptions } from "./api-property.decorator.js";
+export { ApiProperty, ApiPropertyOptional, getApiProperties } from "./api-property.decorator";
+export type { ApiPropertyOptions } from "./api-property.decorator";
 
 // ApiResponse decorators
 export {
@@ -14,28 +14,28 @@ export {
   ApiServiceUnavailableResponse,
   ApiInternalServerErrorResponse,
   getApiResponses,
-} from "./api-response.decorator.js";
-export type { ApiResponseOptions } from "./api-response.decorator.js";
+} from "./api-response.decorator";
+export type { ApiResponseOptions } from "./api-response.decorator";
 
 // ApiOperation decorators
-export { ApiOperation, getApiOperation } from "./api-operation.decorator.js";
-export type { ApiOperationOptions } from "./api-operation.decorator.js";
+export { ApiOperation, getApiOperation } from "./api-operation.decorator";
+export type { ApiOperationOptions } from "./api-operation.decorator";
 
 // ApiTags decorators
-export { ApiTags, getApiTags } from "./api-tags.decorator.js";
+export { ApiTags, getApiTags } from "./api-tags.decorator";
 
 // ApiParam decorators
-export { ApiParam, getApiParams } from "./api-param.decorator.js";
-export type { ApiParamOptions } from "./api-param.decorator.js";
+export { ApiParam, getApiParams } from "./api-param.decorator";
+export type { ApiParamOptions } from "./api-param.decorator";
 
 // ApiQuery decorators
-export { ApiQuery, getApiQueries } from "./api-query.decorator.js";
-export type { ApiQueryOptions } from "./api-query.decorator.js";
+export { ApiQuery, getApiQueries } from "./api-query.decorator";
+export type { ApiQueryOptions } from "./api-query.decorator";
 
 // ApiBody decorators
-export { ApiBody, getApiBody } from "./api-body.decorator.js";
-export type { ApiBodyOptions } from "./api-body.decorator.js";
+export { ApiBody, getApiBody } from "./api-body.decorator";
+export type { ApiBodyOptions } from "./api-body.decorator";
 
 // Route decorators
-export { Get, Post, Put, Delete, Patch, getRouteMetadata } from "./route.decorator.js";
-export type { RouteMetadata } from "./route.decorator.js";
+export { Get, Post, Put, Delete, Patch, getRouteMetadata } from "./route.decorator";
+export type { RouteMetadata } from "./route.decorator";

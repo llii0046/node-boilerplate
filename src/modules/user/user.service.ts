@@ -1,47 +1,59 @@
-import { CreateUserDto, UpdateUserDto } from "./dto";
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./dto";
 import { NotFoundError, ConflictError } from "@/shares/error";
 import { LoggerService } from "../shared/logger";
 import { IPrismaService } from "../shared/prisma";
 import { PaginationDto } from "@/shares/dto";
 import { IUserService } from "./user.interface";
+import { createPaginator, PaginatedResult } from "prisma-pagination";
 
 export class UserService implements IUserService {
+  private paginate: ReturnType<typeof createPaginator>;
+
   constructor(
     private prismaService: IPrismaService,
     private loggerService: LoggerService,
-  ) {}
+  ) {
+    this.paginate = createPaginator({});
+  }
 
-  async getUsers(dto: PaginationDto) {
-    const { page = 1, limit = 10 } = dto;
-    const skip = (page - 1) * limit;
-    this.loggerService?.info("Fetching users", { page, limit, skip });
+  async findAll(dto: PaginationDto): Promise<PaginatedResult<UserResponseDto>> {
+    this.loggerService?.info("Fetching users", { page: dto.page, limit: dto.limit });
 
-    const [users, total] = await Promise.all([
-      this.prismaService.user.findMany({
-        skip,
-        take: limit,
+    const result = await this.paginate(
+      this.prismaService.user,
+      {
         select: {
           id: true,
           email: true,
           name: true,
+          isActive: true,
           createdAt: true,
           updatedAt: true,
         },
-      }),
-      this.prismaService.user.count(),
-    ]);
+        orderBy: { createdAt: "desc" },
+      },
+      {
+        page: dto.page || 1,
+        perPage: dto.limit || 10,
+      },
+    );
 
-    this.loggerService.info("Users fetched successfully", {
-      count: users.length,
-      total,
-      page,
-      limit,
-    });
+    this.loggerService.info("Users fetched successfully", result);
 
-    return { users, total };
+    // Convert Date objects to ISO strings for API response
+    const transformedData = {
+      ...result,
+      data: result.data.map((user: any) => ({
+        ...user,
+        createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+        updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
+      })),
+    };
+
+    return transformedData as PaginatedResult<UserResponseDto>;
   }
 
-  async getUserById(id: string) {
+  async findById(id: string): Promise<UserResponseDto> {
     this.loggerService?.info("Looking for user by ID", { id });
 
     const user = await this.prismaService.user.findUnique({
@@ -50,11 +62,11 @@ export class UserService implements IUserService {
         id: true,
         email: true,
         name: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
-
     this.loggerService?.info("User lookup result", { found: !!user, id });
 
     if (!user) {
@@ -63,10 +75,44 @@ export class UserService implements IUserService {
     }
 
     this.loggerService?.info("User found successfully", { id: user.id, email: user.email });
-    return user;
+    return {
+      ...user,
+      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
+    };
   }
 
-  async createUser(userData: CreateUserDto) {
+  async findByEmail(email: string): Promise<UserResponseDto> {
+    this.loggerService?.info("Looking for user by email", { email });
+
+    const user = await this.prismaService.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    this.loggerService?.info("User lookup result", { found: !!user, email });
+
+    if (!user) {
+      this.loggerService?.warn("User not found", { email });
+      throw new NotFoundError("User not found");
+    }
+
+    this.loggerService?.info("User found successfully", { id: user.id, email: user.email });
+    return {
+      ...user,
+      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
+    };
+  }
+
+  async create(userData: CreateUserDto): Promise<UserResponseDto> {
     // Check if email already exists
     const existingUser = await this.prismaService.user.findUnique({
       where: { email: userData.email },
@@ -82,15 +128,20 @@ export class UserService implements IUserService {
         id: true,
         email: true,
         name: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
-    return user;
+    return {
+      ...user,
+      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
+    };
   }
 
-  async updateUser(id: string, userData: UpdateUserDto) {
+  async update(id: string, userData: UpdateUserDto): Promise<UserResponseDto> {
     // Check if user exists
     const existingUser = await this.prismaService.user.findUnique({
       where: { id },
@@ -118,15 +169,20 @@ export class UserService implements IUserService {
         id: true,
         email: true,
         name: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
-    return user;
+    return {
+      ...user,
+      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
+    };
   }
 
-  async deleteUser(id: string) {
+  async delete(id: string): Promise<void> {
     const user = await this.prismaService.user.findUnique({
       where: { id },
     });
@@ -138,7 +194,5 @@ export class UserService implements IUserService {
     await this.prismaService.user.delete({
       where: { id },
     });
-
-    return true;
   }
 }

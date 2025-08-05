@@ -24,6 +24,8 @@ import { UserService } from "./user.service";
 import { NotFoundError, BadRequestError, ConflictError, InternalServerError } from "@/shares/error";
 import { IUserController } from "./user.interface";
 import { LoggerService } from "../shared/logger";
+import { ResponseUtil } from "@/shares/response";
+import { validateDto } from "@/shares/validation";
 
 @ApiTags("Users")
 export class UserController extends ControllerBase implements IUserController {
@@ -71,22 +73,14 @@ export class UserController extends ControllerBase implements IUserController {
         throw new BadRequestError("Invalid pagination parameters");
       }
 
-      const result = await this.userService.getUsers({ page, limit });
+      const result = await this.userService.findAll({ page, limit });
 
-      res.json({
-        data: result.users,
-        total: result.total,
-        page,
-        limit,
-      });
+      ResponseUtil.paginated(res, result.data, result.meta);
     } catch (error) {
       if (error instanceof BadRequestError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.badRequest(res, error.message);
       } else {
-        throw new InternalServerError("Internal server error");
+        ResponseUtil.internalServerError(res);
       }
     }
   }
@@ -113,22 +107,19 @@ export class UserController extends ControllerBase implements IUserController {
   async getUserById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const user = await this.userService.getUserById(id);
+      const user = await this.userService.findById(id);
 
-      res.json(user);
+      ResponseUtil.success(res, user);
     } catch (error) {
       if (error instanceof NotFoundError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.notFound(res, error.message);
       } else {
-        throw new InternalServerError("Internal server error");
+        ResponseUtil.internalServerError(res);
       }
     }
   }
 
-  @Post()
+  @Post("", [validateDto(CreateUserDto)])
   @ApiOperation({
     summary: "Create user",
     description: "Create a new user",
@@ -152,27 +143,21 @@ export class UserController extends ControllerBase implements IUserController {
   async createUser(req: Request, res: Response) {
     try {
       const userData: CreateUserDto = req.body;
-      const user = await this.userService.createUser(userData);
+      const user = await this.userService.create(userData);
 
-      res.status(201).json(user);
+      ResponseUtil.created(res, user);
     } catch (error) {
       if (error instanceof ConflictError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.conflict(res, error.message);
       } else if (error instanceof BadRequestError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.badRequest(res, error.message);
       } else {
-        throw new InternalServerError("Internal server error");
+        ResponseUtil.internalServerError(res);
       }
     }
   }
 
-  @Put("/:id")
+  @Put("/:id", [validateDto(UpdateUserDto)])
   @ApiOperation({
     summary: "Update user",
     description: "Update specified user information",
@@ -208,27 +193,18 @@ export class UserController extends ControllerBase implements IUserController {
       const { id } = req.params;
       const userData: UpdateUserDto = req.body;
 
-      const user = await this.userService.updateUser(id, userData);
+      const user = await this.userService.update(id, userData);
 
-      res.json(user);
+      ResponseUtil.success(res, user);
     } catch (error) {
       if (error instanceof NotFoundError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.notFound(res, error.message);
       } else if (error instanceof ConflictError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.conflict(res, error.message);
       } else if (error instanceof BadRequestError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.badRequest(res, error.message);
       } else {
-        throw new InternalServerError("Internal server error");
+        ResponseUtil.internalServerError(res);
       }
     }
   }
@@ -255,17 +231,14 @@ export class UserController extends ControllerBase implements IUserController {
   async deleteUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      await this.userService.deleteUser(id);
+      await this.userService.delete(id);
 
-      res.json({ message: "User deleted successfully" });
+      ResponseUtil.noContent(res);
     } catch (error) {
       if (error instanceof NotFoundError) {
-        res.status(error.statusCode).json({
-          error: error.errorCode,
-          message: error.message,
-        });
+        ResponseUtil.notFound(res, error.message);
       } else {
-        throw new InternalServerError("Internal server error");
+        ResponseUtil.internalServerError(res);
       }
     }
   }

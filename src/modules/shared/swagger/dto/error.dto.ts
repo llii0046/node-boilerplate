@@ -1,4 +1,4 @@
-import { ApiProperty } from "@/modules/shared/swagger/decorators/index.js";
+import { ApiProperty } from "@/modules/shared/swagger/decorators";
 
 export class ErrorResponseDto {
   @ApiProperty({

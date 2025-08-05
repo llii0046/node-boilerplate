@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { UserModule } from "./modules/user/user.module.js";
-import { HealthController } from "./modules/health/health.controller.js";
+import { UserModule } from "./modules/user/user.module";
+import { HealthController } from "./modules/health/health.controller";
 import swaggerUi from "swagger-ui-express";
 import { SharedModule } from "@/modules/shared/shared.module";
 import { SwaggerService } from "@/modules/shared/swagger/swagger.service";
@@ -27,17 +27,12 @@ export class AppModule {
     this.setupRoutes();
     this.setupSwagger();
 
-    console.log("AppModule constructor completed");
-    console.log("Router stack:", this.router.stack.length);
   }
 
   // Register module routes
   private setupRoutes(): void {
     this.router.use("/users", this.userModule.getRouter());
     this.router.use("/health", this.healthController.getRouter());
-    console.log("Routes setup completed");
-    console.log("User module router stack:", this.userModule.getRouter().stack.length);
-    console.log("Health controller router stack:", this.healthController.getRouter().stack.length);
   }
 
   private setupSwagger(): void {
@@ -55,7 +50,6 @@ export class AppModule {
 
       // Generate Swagger specification
       const spec = swaggerService.generateSpec();
-      console.log("Generated Swagger spec:", JSON.stringify(spec, null, 2));
 
       // Set up Swagger UI routes
       this.router.use("/docs", swaggerUi.serve);
@@ -82,17 +76,6 @@ export class AppModule {
         }),
       );
       this.router.get("/openapi.json", (_req, res) => res.json(spec));
-
-      console.log("Swagger routes registered successfully");
-      console.log("Router stack after Swagger setup:", this.router.stack.length);
-      console.log(
-        "Router stack details:",
-        this.router.stack.map((layer: any) => ({
-          regexp: layer.regexp.toString(),
-          route: layer.route?.path,
-          methods: layer.route?.methods,
-        })),
-      );
     } catch (error) {
       console.error("Error setting up Swagger:", error);
     }

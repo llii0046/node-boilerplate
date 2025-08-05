@@ -72,10 +72,10 @@ describe("Custom Error Classes", () => {
   });
 
   describe("ValidationError", () => {
-    it("should create 400 error with details", () => {
+    it("should create 422 error with details", () => {
       const details = [{ field: "email", message: "Invalid email format" }];
       const error = new ValidationError("Validation failed", details);
-      expect(error.statusCode).toBe(400);
+      expect(error.statusCode).toBe(422);
       expect(error.errorCode).toBe("VALIDATION_ERROR");
       expect(error.details).toEqual(details);
     });

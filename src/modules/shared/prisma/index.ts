@@ -1,4 +1,4 @@
-import { PrismaService } from "./prisma.service.js";
+import { PrismaService } from "./prisma.service";
 
 // Simple dependency injection container
 class Container {
@@ -33,5 +33,5 @@ class Container {
 export const container = new Container();
 
 // Export types
-export { PrismaService } from "./prisma.service.js";
-export type { IPrismaService } from "./prisma.service.js";
+export { PrismaService } from "./prisma.service";
+export type { IPrismaService } from "./prisma.service";

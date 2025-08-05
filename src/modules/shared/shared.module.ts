@@ -1,7 +1,7 @@
-import { LoggerService } from "./logger/logger.service.js";
-import { PrismaService } from "./prisma/prisma.service.js";
-import { SwaggerService } from "./swagger/swagger.service.js";
-import { SwaggerConfig } from "./swagger/swagger-config.js";
+import { LoggerService } from "./logger/logger.service";
+import { PrismaService } from "./prisma/prisma.service";
+import { SwaggerService } from "./swagger/swagger.service";
+import { SwaggerConfig } from "./swagger/swagger-config";
 
 /**
  * Global shared module

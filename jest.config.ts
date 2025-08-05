@@ -15,7 +15,7 @@ const config: Config = {
     ],
   },
   extensionsToTreatAsEsm: [".ts"],
-  setupFiles: ["<rootDir>/src/utils/jest.setup.ts"],
+  setupFiles: ["<rootDir>/src/config/jest.setup.ts"],
   testMatch: ["**/?(*.)+(test).ts"],
   verbose: true,
   collectCoverageFrom: ["src/**/*.ts"],

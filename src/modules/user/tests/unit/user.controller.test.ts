@@ -3,6 +3,7 @@ import { IPrismaService } from "@/modules/shared/prisma";
 import { UserController } from "@/modules/user/user.controller";
 import { UserService } from "@/modules/user/user.service";
 import { Request, Response, NextFunction } from "express";
+import { NotFoundError, ConflictError } from "@/shares/error";
 
 // Mock UserService
 jest.mock("@/modules/user/user.service");
@@ -64,23 +65,28 @@ describe("UserController", () => {
             updatedAt: new Date(),
           },
         ],
-        total: 1,
-        page: 1,
-        limit: 10,
+        meta: {
+          total: 1,
+          currentPage: 1,
+          lastPage: 1,
+          perPage: 10,
+          prev: null,
+          next: null,
+        },
       };
 
-      mockUserService.getUsers = jest.fn().mockResolvedValue(mockResult);
+      mockUserService.findAll = jest.fn().mockResolvedValue(mockResult);
       mockRequest.query = { page: "1", limit: "10" };
 
       await userController.getUsers(mockRequest as Request, mockResponse as Response);
 
-      expect(mockUserService.getUsers).toHaveBeenCalledWith(1, 10);
+      expect(mockUserService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 });
       expect(mockResponse.json).toHaveBeenCalledWith(mockResult);
     });
 
     it("should handle errors", async () => {
       const error = new Error("Database error");
-      mockUserService.getUsers = jest.fn().mockRejectedValue(error);
+      mockUserService.findAll = jest.fn().mockRejectedValue(error);
 
       await userController.getUsers(mockRequest as Request, mockResponse as Response);
 
@@ -97,17 +103,19 @@ describe("UserController", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      mockUserService.getUserById = jest.fn().mockResolvedValue(mockUser);
+      mockUserService.findById = jest.fn().mockResolvedValue(mockUser);
       mockRequest.params = { id: "1" };
 
       await userController.getUserById(mockRequest as Request, mockResponse as Response);
 
-      expect(mockUserService.getUserById).toHaveBeenCalledWith("1");
+      expect(mockUserService.findById).toHaveBeenCalledWith("1");
       expect(mockResponse.json).toHaveBeenCalledWith({ data: mockUser });
     });
 
     it("should return 404 when user not found", async () => {
-      mockUserService.getUserById = jest.fn().mockResolvedValue(null);
+      const notFoundError = new NotFoundError("User not found");
+      
+      mockUserService.findById = jest.fn().mockRejectedValue(notFoundError);
       mockRequest.params = { id: "999" };
 
       await userController.getUserById(mockRequest as Request, mockResponse as Response);
@@ -124,26 +132,26 @@ describe("UserController", () => {
     it("should create user successfully", async () => {
       const userData = { email: "new@example.com", name: "New User" };
       const mockUser = { id: "1", ...userData, createdAt: new Date(), updatedAt: new Date() };
-      mockUserService.createUser = jest.fn().mockResolvedValue(mockUser);
+      mockUserService.create = jest.fn().mockResolvedValue(mockUser);
       mockRequest.body = userData;
 
       await userController.createUser(mockRequest as Request, mockResponse as Response);
 
-      expect(mockUserService.createUser).toHaveBeenCalledWith(userData);
+      expect(mockUserService.create).toHaveBeenCalledWith(userData);
       expect(mockResponse.status).toHaveBeenCalledWith(201);
       expect(mockResponse.json).toHaveBeenCalledWith({ data: mockUser });
     });
 
     it("should handle duplicate email error", async () => {
-      const error = new Error("Email already exists");
-      mockUserService.createUser = jest.fn().mockRejectedValue(error);
+      const conflictError = new ConflictError("Email already exists");
+      mockUserService.create = jest.fn().mockRejectedValue(conflictError);
       mockRequest.body = { email: "existing@example.com", name: "Existing User" };
 
       await userController.createUser(mockRequest as Request, mockResponse as Response);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.status).toHaveBeenCalledWith(409);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        error: "BAD_REQUEST",
+        error: "CONFLICT",
         message: "Email already exists",
       });
     });
@@ -159,27 +167,27 @@ describe("UserController", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      mockUserService.updateUser = jest.fn().mockResolvedValue(mockUser);
+      mockUserService.update = jest.fn().mockResolvedValue(mockUser);
       mockRequest.params = { id: "1" };
       mockRequest.body = updateData;
 
       await userController.updateUser(mockRequest as Request, mockResponse as Response);
 
-      expect(mockUserService.updateUser).toHaveBeenCalledWith("1", updateData);
+      expect(mockUserService.update).toHaveBeenCalledWith("1", updateData);
       expect(mockResponse.json).toHaveBeenCalledWith({ data: mockUser });
     });
 
     it("should handle user not found error", async () => {
-      const error = new Error("User not found");
-      mockUserService.updateUser = jest.fn().mockRejectedValue(error);
+      const notFoundError = new NotFoundError("User not found");
+      mockUserService.update = jest.fn().mockRejectedValue(notFoundError);
       mockRequest.params = { id: "999" };
       mockRequest.body = { name: "New Name" };
 
       await userController.updateUser(mockRequest as Request, mockResponse as Response);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.status).toHaveBeenCalledWith(404);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        error: "BAD_REQUEST",
+        error: "NOT_FOUND",
         message: "User not found",
       });
     });
@@ -187,19 +195,19 @@ describe("UserController", () => {
 
   describe("deleteUser", () => {
     it("should delete user successfully", async () => {
-      mockUserService.deleteUser = jest.fn().mockResolvedValue(undefined);
+      mockUserService.delete = jest.fn().mockResolvedValue(undefined);
       mockRequest.params = { id: "1" };
 
       await userController.deleteUser(mockRequest as Request, mockResponse as Response);
 
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith("1");
+      expect(mockUserService.delete).toHaveBeenCalledWith("1");
       expect(mockResponse.status).toHaveBeenCalledWith(204);
       expect(mockResponse.send).toHaveBeenCalled();
     });
 
     it("should handle user not found error", async () => {
-      const error = new Error("User not found");
-      mockUserService.deleteUser = jest.fn().mockRejectedValue(error);
+      const notFoundError = new NotFoundError("User not found");
+      mockUserService.delete = jest.fn().mockRejectedValue(notFoundError);
       mockRequest.params = { id: "999" };
 
       await userController.deleteUser(mockRequest as Request, mockResponse as Response);

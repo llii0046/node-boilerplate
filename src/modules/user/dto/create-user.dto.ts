@@ -4,18 +4,16 @@ import {
   IsOptional,
   MinLength,
   MaxLength,
-  IsInt,
-  Min,
-  Max,
   IsBoolean,
 } from "class-validator";
 import { Expose, Transform } from "class-transformer";
-import { ApiProperty, ApiPropertyOptional } from "@/modules/shared/swagger/decorators/index.js";
+import { ApiProperty, ApiPropertyOptional } from "@/modules/shared/swagger/decorators";
+import { Prisma } from "@prisma/client";
 
 /**
  * Create user DTO
  */
-export class CreateUserDto {
+export class CreateUserDto implements Prisma.UserCreateInput {
   @ApiProperty({
     description: "User email",
     example: "user@example.com",
@@ -51,20 +49,6 @@ export class CreateUserDto {
   @IsOptional()
   @Expose()
   password?: string;
-
-  @ApiPropertyOptional({
-    description: "User age",
-    example: 25,
-    minimum: 0,
-    maximum: 150,
-  })
-  @IsInt({ message: "Age must be an integer" })
-  @Min(0, { message: "Age cannot be less than 0" })
-  @Max(150, { message: "Age cannot be greater than 150" })
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  @Expose()
-  age?: number;
 
   @ApiPropertyOptional({
     description: "User activation status",

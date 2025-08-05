@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { app } from "./app.js";
+import { app } from "./app";
 import { banner, checkDatabase, maskDatabaseUrl } from "./utils/startup.js";
-import { AppModule } from "./app.module.js";
+import { AppModule } from "./app.module";
 
 const port = Number(process.env.PORT) || 3000;
 const env = process.env.NODE_ENV || "development";

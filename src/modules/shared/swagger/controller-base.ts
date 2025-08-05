@@ -1,6 +1,12 @@
 import { Router } from "express";
-import { getRouteMetadata } from "./decorators/route.decorator.js";
-import { SwaggerGenerator } from "./swagger-generator.js";
+import { getRouteMetadata } from "./decorators/route.decorator";
+import { SwaggerGenerator } from "./swagger-generator";
+
+export interface RouteMetadata {
+  path: string;
+  method: string;
+  middlewares?: any[];
+}
 
 export abstract class ControllerBase {
   protected router: Router;
@@ -26,7 +32,14 @@ export abstract class ControllerBase {
         // Register route - use path defined in decorator
         const routerMethod = this.router[method as keyof Router] as any;
         if (routerMethod && typeof routerMethod === "function") {
-          routerMethod.call(this.router, routeMetadata.path, prototype[methodName].bind(this));
+          const handler = prototype[methodName].bind(this);
+          
+          // Apply middlewares if any
+          if (routeMetadata.middlewares && routeMetadata.middlewares.length > 0) {
+            routerMethod.call(this.router, routeMetadata.path, ...routeMetadata.middlewares, handler);
+          } else {
+            routerMethod.call(this.router, routeMetadata.path, handler);
+          }
         }
 
         // Add to Swagger generator - use original path

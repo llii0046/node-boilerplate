@@ -1,6 +1,6 @@
 import { IsInt } from "class-validator";
 import { Expose } from "class-transformer";
-import { ApiProperty } from "@/modules/shared/swagger/decorators/index.js";
+import { ApiProperty } from "@/modules/shared/swagger/decorators";
 import { UserResponseDto } from "./user-response.dto";
 
 /**

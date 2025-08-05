@@ -1,6 +1,6 @@
 import pino from "pino";
-import { ILoggerService } from "./logger.interface.js";
-import { LoggerConfig, LogContext, ErrorLogData, OperationLogData } from "./logger.type.js";
+import { ILoggerService } from "./logger.interface";
+import { LoggerConfig, LogContext, ErrorLogData, OperationLogData } from "./logger.type";
 
 export class LoggerService implements ILoggerService {
   private logger: pino.Logger;

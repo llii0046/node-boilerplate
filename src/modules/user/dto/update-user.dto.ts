@@ -4,18 +4,16 @@ import {
   IsOptional,
   MinLength,
   MaxLength,
-  IsInt,
-  Min,
-  Max,
   IsBoolean,
 } from "class-validator";
 import { Expose, Transform } from "class-transformer";
-import { ApiPropertyOptional } from "@/modules/shared/swagger/decorators/index.js";
+import { ApiPropertyOptional } from "@/modules/shared/swagger/decorators";
+import { Prisma } from "@prisma/client";
 
 /**
  * Update user DTO
  */
-export class UpdateUserDto {
+export class UpdateUserDto implements Prisma.UserUpdateInput {
   @ApiPropertyOptional({
     description: "User email",
     example: "user@example.com",
@@ -37,33 +35,6 @@ export class UpdateUserDto {
   @IsOptional()
   @Expose()
   name?: string;
-
-  @ApiPropertyOptional({
-    description: "User password",
-    example: "password123",
-    minLength: 6,
-    maxLength: 100,
-  })
-  @IsString({ message: "Password must be a string" })
-  @MinLength(6, { message: "Password length cannot be less than 6 characters" })
-  @MaxLength(100, { message: "Password length cannot exceed 100 characters" })
-  @IsOptional()
-  @Expose()
-  password?: string;
-
-  @ApiPropertyOptional({
-    description: "User age",
-    example: 25,
-    minimum: 0,
-    maximum: 150,
-  })
-  @IsInt({ message: "Age must be an integer" })
-  @Min(0, { message: "Age cannot be less than 0" })
-  @Max(150, { message: "Age cannot be greater than 150" })
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  @Expose()
-  age?: number;
 
   @ApiPropertyOptional({
     description: "User activation status",

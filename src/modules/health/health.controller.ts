@@ -8,7 +8,7 @@ import {
   Get,
   ApiProperty,
 } from "@/modules/shared/swagger";
-import { checkDatabase } from "@/utils/startup.js";
+import { checkDatabase } from "@/utils/startup";
 
 export class HealthResponseDto {
   @ApiProperty({
