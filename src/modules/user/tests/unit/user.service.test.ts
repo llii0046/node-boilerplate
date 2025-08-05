@@ -124,8 +124,8 @@ describe("UserService", () => {
       expect(mockLoggerService.info).toHaveBeenCalledWith("User found successfully", { id: "1", email: "test@example.com" });
       expect(result).toEqual({
         ...mockUser,
-        createdAt: mockUser.createdAt.toISOString(),
-        updatedAt: mockUser.updatedAt.toISOString(),
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
       });
     });
 
@@ -182,8 +182,8 @@ describe("UserService", () => {
       // });
       expect(result).toEqual({
         ...mockUser,
-        createdAt: mockUser.createdAt.toISOString(),
-        updatedAt: mockUser.updatedAt.toISOString(),
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
       });
     });
 
